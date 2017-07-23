@@ -8,10 +8,6 @@ using json = nlohmann::json;
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
 
-double deg2rad(double x) { return x * pi() / 180; }
-
-double rad2deg(double x) { return x * 180 / pi(); }
-
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
 // else the empty string "" will be returned.
@@ -33,7 +29,10 @@ int main() {
 
     PID pid;
     // Initialize the pid variable.
-    pid.Init(-0.25, 0, -0.75);
+    double steering_sensitivity = -0.1337;
+    int steering_drift = 0;
+    double counter_steer = -M_PI;
+    pid.Init(steering_sensitivity, steering_drift, counter_steer);
 
     h.onMessage([&pid](uWS::WebSocket<uWS::SERVER != 0u> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
@@ -63,7 +62,7 @@ int main() {
 
                     json msgJson;
                     msgJson["steering_angle"] = steer_value;
-                    msgJson["throttle"] = 0.3;
+                    msgJson["throttle"] = 0.55;
                     auto msg = "42[\"steer\"," + msgJson.dump() + "]";
                     std::cout << msg << std::endl;
                     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
